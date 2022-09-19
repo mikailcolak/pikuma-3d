@@ -58,8 +58,8 @@ bool initialize_window() {
 }
 
 void draw_pixel(int x, int y, uint32_t color) {
-    if (x >= win_width || y >= win_height) {
-        fprintf(stderr, "Can not set pixel at (x=%d, y=%d)\n", x, y);
+    if (x < 0 || y < 0 || x >= win_width || y >= win_height) {
+        //fprintf(stderr, "Can not set pixel at (x=%d, y=%d)\n", x, y);
         return;
     }
     color_buffer[y * win_width + x] = color;
@@ -92,7 +92,7 @@ void draw_rect(int x, int y, int width, int height, uint32_t color) {
 
     for (int u = x; u < w; ++u) {
         for (int v = y; v < h; ++v) {
-            color_buffer[v * win_width + u] = color;
+            draw_pixel(u, v, color);
         }
     }
 }

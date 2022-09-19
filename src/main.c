@@ -9,6 +9,9 @@
 
 #define N_POINTS 9 * 9 * 9
 vec3_t cube_points[N_POINTS];
+vec2_t projected_points[N_POINTS];
+float fov_factor = 640;
+vec3_t camera_position = { .x = 0, .y = 0, .z = -5 };
 
 bool is_running = false;
 
@@ -51,27 +54,37 @@ void process_input() {
 
     if (event.type == SDL_QUIT || event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_ESCAPE) {
         is_running = false;
+        return;
     }
+
+
+}
+
+vec2_t project(vec3_t point) {
+    return (vec2_t){
+        (fov_factor * point.x) / point.z,
+        (fov_factor * point.y) / point.z
+    };
 }
 
 void update() {
-
+    for (int i = 0; i < N_POINTS; ++i) {
+        vec3_t point = cube_points[i];
+        point.z -= camera_position.z;
+        projected_points[i] = project(point);
+    }
 }
 
 void render() {
-    SDL_SetRenderDrawColor(renderer, 127, 40, 40, 255);
-    SDL_RenderClear(renderer);
+    draw_grid(100, 100);
+
+    for (int i = 0; i < N_POINTS; ++i) {
+        vec2_t pp = projected_points[i];
+        draw_rect(pp.x + win_width / 2.0, pp.y + win_height / 2.0, 4, 4, 0xFFFFFF00);
+    }
 
     render_color_buffer();
     clear_color_buffer(0xFF7F3535);
-    draw_grid(100, 100);
-    draw_rect(700, 500, 50, 50, 0xFF00F7F7);
-    draw_pixel(0, 0, 0xffffffff);
-    draw_pixel(win_width-1, 0, 0xffffffff);
-    draw_pixel(win_width-1, win_height-1, 0xffffffff);
-    draw_pixel(0, win_height-1, 0xffffffff);
-    draw_pixel(win_height, win_height, 0xffffffff);
-
 
     SDL_RenderPresent(renderer);
 }
