@@ -4,13 +4,13 @@ cmake_minimum_required(VERSION 3.5)
 set(PROJECT_NAME pikuma-3d)
 
 project(${PROJECT_NAME})
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -lm")
 
 # Include paths
 set(INCLUDE_DIRS
     ${INCLUDE_DIRS}
-    ${PROJECT_SOURCE_DIR}/include
     ${PROJECT_SOURCE_DIR}/external/SDL
+    ${PROJECT_SOURCE_DIR}/include
 )
 
 # Assign the include directories

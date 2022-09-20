@@ -8,12 +8,18 @@
 #include <stdint.h>
 
 #define N_POINTS 9 * 9 * 9
+
 vec3_t cube_points[N_POINTS];
+vec3_t cube_rotation = { .x = 0, .y = 0, .z = 0 };
 vec2_t projected_points[N_POINTS];
+
 float fov_factor = 640;
+
 vec3_t camera_position = { .x = 0, .y = 0, .z = -5 };
 
+
 bool is_running = false;
+uint64_t previous_frame_time = 0;
 
 bool setup() {
     color_buffer = (uint32_t*)calloc(win_width * win_height, sizeof(uint32_t));;
@@ -68,19 +74,39 @@ vec2_t project(vec3_t point) {
 }
 
 void update() {
+    
+    // while (!SDL_TICKS_PASSED(SDL_GetTicks(), previous_frame_time + FRAME_TARGET_TIME));
+    int time_to_wait = FRAME_TARGET_TIME - (SDL_GetTicks() - previous_frame_time);
+
+    if (time_to_wait > 0 && time_to_wait <= FRAME_TARGET_TIME) {
+        SDL_Delay(time_to_wait);
+    }
+
+    previous_frame_time = SDL_GetTicks();
+    
+    cube_rotation.x += 0.01;
+    cube_rotation.y += 0.01;
+    cube_rotation.z += 0.01;
+
     for (int i = 0; i < N_POINTS; ++i) {
         vec3_t point = cube_points[i];
-        point.z -= camera_position.z;
-        projected_points[i] = project(point);
+        
+        vec3_t transformed_point = vec3_t_rotate_x(point, cube_rotation.x);
+        transformed_point = vec3_t_rotate_y(transformed_point, cube_rotation.y);
+        transformed_point = vec3_t_rotate_z(transformed_point, cube_rotation.z);
+
+        transformed_point.z -= camera_position.z;
+        
+        projected_points[i] = project(transformed_point);
     }
 }
 
 void render() {
-    draw_grid(100, 100);
+    //draw_grid(100, 100);
 
     for (int i = 0; i < N_POINTS; ++i) {
         vec2_t pp = projected_points[i];
-        draw_rect(pp.x + win_width / 2.0, pp.y + win_height / 2.0, 4, 4, 0xFFFFFF00);
+        draw_rect(pp.x-2 + win_width / 2.0, pp.y-2 + win_height / 2.0, 5, 5, 0xFFFFFF00);
     }
 
     render_color_buffer();
