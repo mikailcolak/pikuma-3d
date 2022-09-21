@@ -14,7 +14,7 @@ uint32_t* color_buffer = NULL;
 
 int win_width = 800;
 int win_height = 600;
-int WINDOW_INDEX = 1;
+int WINDOW_INDEX = 0;
 
 bool initialize_window() {
 

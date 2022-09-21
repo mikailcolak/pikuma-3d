@@ -42,6 +42,17 @@ float vec2_dot(vec2_t v0, vec2_t v1) {
          + v0.y * v1.y;
 }
 
+void vec2_normalize(vec2_t* v) {
+    float len = vec2_length(*v);
+    v->x /= len;
+    v->y /= len;
+}
+
+vec2_t vec2_normalized(vec2_t v) {
+    vec2_normalize(&v);
+    return v;
+}
+
 
 // Vector 3D
 float vec3_length(vec3_t v) {
@@ -94,6 +105,18 @@ float vec3_dot(vec3_t v0, vec3_t v1) {
     return v0.x * v1.x
          + v0.y * v1.y
          + v0.z * v1.z;
+}
+
+void vec3_normalize(vec3_t* v) {
+    float len = vec3_length(*v);
+    v->x /= len;
+    v->y /= len;
+    v->z /= len;
+}
+
+vec3_t vec3_normalized(vec3_t v) {
+    vec3_normalize(&v);
+    return v;
 }
 
 vec3_t vec3_t_rotate_x(vec3_t v, float angle){

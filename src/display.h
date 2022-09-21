@@ -3,6 +3,7 @@
 
 #include "SDL.h"
 
+#include <bits/stdint-uintn.h>
 #include <stdbool.h>
 #include <stdint.h>
 
