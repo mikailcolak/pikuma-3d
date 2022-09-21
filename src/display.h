@@ -26,6 +26,6 @@ void draw_line(int x0, int y0, int x1, int y1, uint32_t color);
 void draw_triangle(int x0, int y0, int x1, int y1, int x2, int y2, uint32_t color);
 void render_color_buffer();
 void clear_color_buffer(uint32_t color);
-void cleanup();
+void destroy_window();
 
 #endif // PK_DISPLAY_H
