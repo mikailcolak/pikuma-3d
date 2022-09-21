@@ -2,6 +2,100 @@
 
 #include <math.h>
 
+// Vector 2D
+float vec2_length(vec2_t v) {
+    return sqrt(v.x * v.x + v.y * v.y);
+}
+
+vec2_t vec2_add(vec2_t v0, vec2_t v1) {
+    return (vec2_t) {
+        v0.x + v1.x,
+        v0.y + v1.y,
+    };
+}
+
+vec2_t vec2_sub(vec2_t v0, vec2_t v1) {
+    return (vec2_t) {
+        v0.x - v1.x,
+        v0.y - v1.y,
+    };
+}
+
+vec2_t vec2_mul(vec2_t v, float s) {
+    return (vec2_t) {
+        v.x * s,
+        v.y * s,
+    };
+}
+
+vec2_t vec2_div(vec2_t v, float s) {
+    if (s == 0.0f) return (vec2_t){ 0, 0 };
+
+    return (vec2_t) {
+        v.x / s,
+        v.y / s,
+    };
+}
+
+float vec2_dot(vec2_t v0, vec2_t v1) {
+    return v0.x * v1.x
+         + v0.y * v1.y;
+}
+
+
+// Vector 3D
+float vec3_length(vec3_t v) {
+    return sqrt(v.x * v.x + v.y * v.y + v.z * v.z);
+}
+
+vec3_t vec3_add(vec3_t v0, vec3_t v1) {
+    return (vec3_t) {
+        v0.x + v1.x,
+        v0.y + v1.y,
+        v0.z + v1.z,
+    };
+}
+
+vec3_t vec3_sub(vec3_t v0, vec3_t v1) {
+    return (vec3_t) {
+        v0.x - v1.x,
+        v0.y - v1.y,
+        v0.z - v1.z,
+    };
+}
+
+vec3_t vec3_mul(vec3_t v, float s) {
+    return (vec3_t) {
+        v.x * s,
+        v.y * s,
+        v.z * s,
+    };
+}
+
+vec3_t vec3_div(vec3_t v, float s) {
+    if (s == 0) return (vec3_t){ 0, 0, 0 };
+
+    return (vec3_t) {
+        v.x / s,
+        v.y / s,
+        v.z / s,
+    };
+}
+
+vec3_t vec3_cross(vec3_t v0, vec3_t v1) {
+    return (vec3_t) {
+        v0.y * v1.z - v0.z * v1.y,
+        v0.z * v1.x - v0.x * v1.z,
+        v0.x * v1.y - v0.y * v1.x,
+    };
+}
+
+float vec3_dot(vec3_t v0, vec3_t v1) {
+    return v0.x * v1.x
+         + v0.y * v1.y
+         + v0.z * v1.z;
+}
+
 vec3_t vec3_t_rotate_x(vec3_t v, float angle){
     return (vec3_t) {
         .x = v.x,

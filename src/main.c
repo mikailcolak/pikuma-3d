@@ -12,7 +12,7 @@
 
 triangle_t* triangles_to_render = NULL;
 
-vec3_t camera_position = { .x = 0, .y = 0, .z = -5 };
+vec3_t camera_position = { .x = 0, .y = 0, .z = 0 };
 
 bool is_running = false;
 uint64_t previous_frame_time = 0;
@@ -39,7 +39,7 @@ bool setup() {
 
     // Load the mesh
     // load_cube_mesh_data();
-    load_obj_file_data("./assets/models/f22.obj");
+    load_obj_file_data("./assets/models/cube.obj");
 
     return true;
 }
@@ -89,7 +89,7 @@ void update() {
         face_vertices[2] = mesh.vertices[mesh_face.c - 1];
 
 
-        triangle_t projected_triangle;
+        vec3_t transformed_vertices[3];
         // Loop all three vertices of this current face and apply transformations
         for (size_t j = 0; j < 3; j++) {
             vec3_t transformed_vertex = face_vertices[j];
@@ -99,11 +99,38 @@ void update() {
             transformed_vertex = vec3_t_rotate_z(transformed_vertex, mesh.rotation.z);
 
             // Translate the vertex away from the camera
-            transformed_vertex.z -= camera_position.z;
+            transformed_vertex.z += 5;
 
+            // Store the transformed vertex in the transformed_vertices array
+            transformed_vertices[j] = transformed_vertex;
+        }
 
+        // Backface culling
+        vec3_t vec_a = transformed_vertices[0]; /*   A   */
+        vec3_t vec_b = transformed_vertices[1]; /*  / \  */
+        vec3_t vec_c = transformed_vertices[2]; /* B---C */
+
+        vec3_t vec_ab = vec3_sub(vec_b, vec_a);
+        vec3_t vec_ac = vec3_sub(vec_c, vec_a);
+
+        // Calculate the face normal (according to left handed coordinate system)
+        vec3_t face_normal = vec3_cross(vec_ab, vec_ac);
+
+        // Find the vectpr between a point in the triangle and the camera origin
+        vec3_t camera_ray = vec3_sub(camera_position, vec_a);
+
+        // Calculate the dot product of the camera and the camera ray
+        float dot_of_the_face_normal_and_the_camera_ray = vec3_dot(face_normal, camera_ray);
+
+        if (dot_of_the_face_normal_and_the_camera_ray < 0) {
+            continue;
+        }
+
+        // Projection
+        triangle_t projected_triangle;
+        for (size_t j = 0; j < 3; j++) {
             // Project the current vertex
-            vec2_t projected_point = project(transformed_vertex);
+            vec2_t projected_point = project(transformed_vertices[j]);
 
             // Scale and translate the projected points to the middle of the screen
             projected_point.x += win_width / 2.0,
