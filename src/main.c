@@ -1,22 +1,20 @@
 #include "SDL.h"
 #include "display.h"
+#include "triangle.h"
 #include "vector.h"
+#include "mesh.h"
 
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdint.h>
 
-#define N_POINTS 9 * 9 * 9
-
-vec3_t cube_points[N_POINTS];
-vec3_t cube_rotation = { .x = 0, .y = 0, .z = 0 };
-vec2_t projected_points[N_POINTS];
-
-float fov_factor = 640;
+triangle_t triangles_to_render[N_MESH_FACES];
 
 vec3_t camera_position = { .x = 0, .y = 0, .z = -5 };
+vec3_t cube_rotation = { .x = 0, .y = 0, .z = 0 };
 
+float fov_factor = 640;
 
 bool is_running = false;
 uint64_t previous_frame_time = 0;
@@ -38,17 +36,6 @@ bool setup() {
     if (!color_buffer_texture) {
         fprintf(stderr, "<!> Could not allocate the color buffer texture.\n");
         return false;
-    }
-
-    // Start loading my array of vectors
-    // From -1 to 1 (in this 9x9x9 cube)
-    int point_i = -1;
-    for (float x = -1; x <= 1; x += 0.25) {
-        for (float y = -1; y <= 1; y += 0.25) {
-            for (float z = -1; z <= 1; z += 0.25) {
-                cube_points[++point_i] = (vec3_t){ .x = x, .y = y, .z = z };
-            }
-        }
     }
 
     return true;
@@ -88,25 +75,74 @@ void update() {
     cube_rotation.y += 0.01;
     cube_rotation.z += 0.01;
 
-    for (int i = 0; i < N_POINTS; ++i) {
-        vec3_t point = cube_points[i];
-        
-        vec3_t transformed_point = vec3_t_rotate_x(point, cube_rotation.x);
-        transformed_point = vec3_t_rotate_y(transformed_point, cube_rotation.y);
-        transformed_point = vec3_t_rotate_z(transformed_point, cube_rotation.z);
 
-        transformed_point.z -= camera_position.z;
-        
-        projected_points[i] = project(transformed_point);
+    // Loop all triangle faces of the mesh
+    for (size_t i = 0; i < N_MESH_FACES; ++i) {
+        face_t mesh_face = mesh_faces[i];
+        vec3_t face_vertices[3];
+        face_vertices[0] = mesh_vertices[mesh_face.a - 1];
+        face_vertices[1] = mesh_vertices[mesh_face.b - 1];
+        face_vertices[2] = mesh_vertices[mesh_face.c - 1];
+
+
+        triangle_t projected_triangle;
+        // Loop all three vertices of this current face and apply transformations
+        for (size_t j = 0; j < 3; j++) {
+            vec3_t transformed_vertex = face_vertices[j];
+
+            transformed_vertex = vec3_t_rotate_x(transformed_vertex, cube_rotation.x);
+            transformed_vertex = vec3_t_rotate_y(transformed_vertex, cube_rotation.y);
+            transformed_vertex = vec3_t_rotate_z(transformed_vertex, cube_rotation.z);
+
+            // Translate the vertex away from the camera
+            transformed_vertex.z -= camera_position.z;
+
+
+            // Project the current vertex
+            vec2_t projected_point = project(transformed_vertex);
+
+            // Scale and translate the projected points to the middle of the screen
+            projected_point.x += win_width / 2.0,
+            projected_point.y += win_height / 2.0,
+
+            // Store it
+            projected_triangle.points[j] = projected_point;
+        }
+
+        // Store the projectd triangle in the array of triangles to render
+        triangles_to_render[i] = projected_triangle;
     }
 }
 
 void render() {
     //draw_grid(100, 100);
 
-    for (int i = 0; i < N_POINTS; ++i) {
-        vec2_t pp = projected_points[i];
-        draw_rect(pp.x-2 + win_width / 2.0, pp.y-2 + win_height / 2.0, 5, 5, 0xFFFFFF00);
+    for (int i = 0; i < N_MESH_FACES; ++i) {
+        triangle_t triangles = triangles_to_render[i];
+        for (int j = 0; j < 3; ++j) {
+            vec2_t point = triangles.points[j];
+            draw_rect(
+                point.x-1,
+                point.y-1,
+                3,
+                3,
+                0xFFFFFF00
+            );
+        }
+        draw_triangle(
+            triangles.points[0].x,
+            triangles.points[0].y,
+            triangles.points[1].x,
+            triangles.points[1].y,
+            triangles.points[2].x,
+            triangles.points[2].y,
+            0xFFFF00FF
+        );
+
+        // draw_line(100, 200, 300,  50, 0xFF22FF22);
+        // draw_line(300,  50, 400, 600, 0xFF22FF22);
+        // draw_line(400, 600, 100, 200, 0xFF22FF22);
+        // draw_line(500, 500, 100, 400, 0xFF22FF22);
     }
 
     render_color_buffer();
