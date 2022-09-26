@@ -1,4 +1,3 @@
-#include <SDL2/SDL.h>
 #include "display.h"
 #include "triangle.h"
 #include "vector.h"
@@ -8,6 +7,8 @@
 #include "config.h"
 #include "light.h"
 
+#include <SDL2/SDL.h>
+#include <bits/stdint-uintn.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -46,11 +47,14 @@ bool setup() {
     float zfar = 100.0f;
     proj_matrix = mat4_make_perspective(fov, aspect, znear, zfar);
 
+    // Load texture (manually)
+    mesh_texture = (uint32_t*)REDBRICK_TEXTURE;
+
     // Load the mesh
-    //load_cube_mesh_data();
+    load_cube_mesh_data();
     //load_obj_file_data("./assets/models/f22.obj");
     //load_obj_file_data("./assets/models/cube.obj");
-    load_next_obj_file_data();
+    //load_next_obj_file_data();
     return true;
 }
 
@@ -80,8 +84,13 @@ void process_input() {
         toggle_solid();
     }
 
-    // * Pressing “4” toggle back-face culling
+    // * Pressing “3” toggle solid rendering
     if (event.key.keysym.sym == SDLK_4) {
+        toggle_textured();
+    }
+
+    // * Pressing “4” toggle back-face culling
+    if (event.key.keysym.sym == SDLK_c) {
         toggle_backface_culling();
     }
 
@@ -123,7 +132,7 @@ void update() {
 
     triangles_to_render = NULL;
 
-    //mesh.rotation.x += 0.01;
+    mesh.rotation.x += 0.01;
     //mesh.rotation.y = fmod(mesh.rotation.y + 0.01, M_PI_2 * 4.0f);
     //mesh.rotation.z = fmod(mesh.rotation.z + 0.01, M_PI_2 * 4.0f);
     //mesh.translation.x = (cos(SDL_GetTicks() / 1000.0f) * 3.0f);
@@ -167,18 +176,6 @@ void update() {
         // Loop all three vertices of this current face and apply transformations
         for (size_t j = 0; j < 3; j++) {
             vec4_t transformed_vertex = vec4_from_vec3(face_vertices[j]);
-
-            // old canceled rotation...
-            //transformed_vertex = vec3_t_rotate_x(transformed_vertex, mesh.rotation.x);
-            //transformed_vertex = vec3_t_rotate_y(transformed_vertex, mesh.rotation.y);
-            //transformed_vertex = vec3_t_rotate_z(transformed_vertex, mesh.rotation.z);
-
-            // Using new matrix multiplications for transformations...
-            //transformed_vertex = mat4_mul_vec4(scale_matrix, transformed_vertex);
-            //transformed_vertex = mat4_mul_vec4(rotation_matrix_x, transformed_vertex);
-            //transformed_vertex = mat4_mul_vec4(rotation_matrix_y, transformed_vertex);
-            //transformed_vertex = mat4_mul_vec4(rotation_matrix_z, transformed_vertex);
-            //transformed_vertex = mat4_mul_vec4(translation_matrix, transformed_vertex);
 
             // Creating a world matrix (combined transformation matrix)
             mat4_t world_matrix = mat4_identity();
@@ -241,11 +238,17 @@ void update() {
 
         triangle_t projected_triangle = {
             .points = {
-                { projected_points[0].x, projected_points[0].y } ,
-                { projected_points[1].x, projected_points[1].y } ,
-                { projected_points[2].x, projected_points[2].y } ,
+                projected_points[0],
+                projected_points[1],
+                projected_points[2],
+            },
+            .texcoords = {
+                { mesh_face.a_uv.u, mesh_face.a_uv.v },
+                { mesh_face.b_uv.u, mesh_face.b_uv.v },
+                { mesh_face.c_uv.u, mesh_face.c_uv.v },
             },
             .color = update_color_intensity(mesh_face.color, light_intensity),
+            .light_intensity = light_intensity,
             .avg_depth = (transformed_vertices[0].z + transformed_vertices[1].z + transformed_vertices[2].z) / 3.0f,
         };
 
@@ -257,7 +260,7 @@ void update() {
     int num_triangles = array_length(triangles_to_render);
     for (int i = 0; i < num_triangles; ++i) {
         for (int j = 0; j < num_triangles; ++j) {
-            if (triangles_to_render[i].avg_depth < triangles_to_render[j].avg_depth) {
+            if (triangles_to_render[i].avg_depth > triangles_to_render[j].avg_depth) {
                 triangle_t temp = triangles_to_render[i];
                 triangles_to_render[i] = triangles_to_render[j];
                 triangles_to_render[j] = temp;
@@ -267,27 +270,34 @@ void update() {
 }
 
 void render() {
-    draw_grid(100, 100);
+    // draw_grid(100, 100);
 
     for (int i = 0; i < array_length(triangles_to_render); ++i) {
         triangle_t triangle = triangles_to_render[i];
-        if (is_solid_enabled()) {
+        if (is_solid_enabled() && !is_textured_enabled()) {
             draw_filled_triangle(
-                triangle.points[0].x,
-                triangle.points[0].y,
-                triangle.points[1].x,
-                triangle.points[1].y,
-                triangle.points[2].x,
-                triangle.points[2].y,
+                triangle.points[0].x, triangle.points[0].y,
+                triangle.points[1].x, triangle.points[1].y,
+                triangle.points[2].x, triangle.points[2].y,
                 triangle.color
+            );
+        }
+        
+        if (is_textured_enabled()) {
+            draw_textured_triangle(
+                triangle.points[0].x, triangle.points[0].y, triangle.points[0].z, triangle.points[0].w, triangle.texcoords[0].u, triangle.texcoords[0].v,
+                triangle.points[1].x, triangle.points[1].y, triangle.points[1].z, triangle.points[1].w, triangle.texcoords[1].u, triangle.texcoords[1].v,
+                triangle.points[2].x, triangle.points[2].y, triangle.points[2].z, triangle.points[2].w, triangle.texcoords[2].u, triangle.texcoords[2].v,
+                mesh_texture,
+                triangle.light_intensity
             );
         }
 
         if (is_vertex_point_enabled()) {
             for (int j = 0; j < 3; ++j) {
-                vec2_t point = triangle.points[j];
+                vec4_t point = triangle.points[j];
                 draw_rect(
-                    point.x-1,
+                    point.x-2,
                     point.y-1,
                     3,
                     3,
@@ -297,12 +307,9 @@ void render() {
         }
         if (is_wireframe_enabled()) {
             draw_triangle(
-                triangle.points[0].x,
-                triangle.points[0].y,
-                triangle.points[1].x,
-                triangle.points[1].y,
-                triangle.points[2].x,
-                triangle.points[2].y,
+                triangle.points[0].x, triangle.points[0].y,
+                triangle.points[1].x, triangle.points[1].y,
+                triangle.points[2].x, triangle.points[2].y,
                 0xFFFFFFFF
             );
         }
@@ -315,8 +322,8 @@ void render() {
     // draw_line(500, 500, 100, 400, 0xFF22FF22);
     // draw_filled_triangle(300, 100, 50, 400, 500, 600, 0xFFEEEEEE);
 
-    draw_line(win_width / 2.0, win_height / 2.0, win_width / 2.0, 0, 0xFF00FF00);
-    draw_line(win_width / 2.0, win_height / 2.0, win_width, win_height / 2, 0xFFFF0000);
+    // draw_line(win_width / 2.0, win_height / 2.0, win_width / 2.0, 0, 0xFF00FF00);
+    // draw_line(win_width / 2.0, win_height / 2.0, win_width, win_height / 2, 0xFFFF0000);
 
     array_free(triangles_to_render);
 
