@@ -10,7 +10,9 @@
 mesh_t mesh = {
     .vertices = NULL,
     .faces = NULL,
-    .rotation = { .x = 0 , .y = 0 , .z= 0 }
+    .rotation = { .x = 0 , .y = 0 , .z = 0 },
+    .scale = { .x = 1, .y = 1, .z = 1 },
+    .translation = { .x = 0, .y = 0, .z = 0 },
 };
 
 vec3_t cube_vertices[N_CUBE_VERTICES] = {
@@ -51,6 +53,9 @@ face_t cube_faces[N_CUBE_FACES] = {
 };
 
 void load_cube_mesh_data() {
+    array_free(mesh.vertices); mesh.vertices = NULL;
+    array_free(mesh.faces); mesh.faces = NULL;
+
     for (int i = 0; i < N_CUBE_VERTICES; ++i) {
         array_push(mesh.vertices, cube_vertices[i]);
     }
@@ -66,11 +71,14 @@ void load_obj_file_data(const char* path) {
         fprintf(stderr, "Could not open the file '%s'", path);
     }
 
+    array_free(mesh.vertices); mesh.vertices = NULL;
+    array_free(mesh.faces); mesh.faces = NULL;
+
     const size_t buffer_length = 1024;
     char buffer[buffer_length];
     size_t read_len;
     while (fgets(buffer, buffer_length, fd)) {
-        
+
         // Vertices
         if (strncmp(buffer, "v ", 2) == 0) {
             vec3_t vertex = {};
@@ -90,4 +98,32 @@ void load_obj_file_data(const char* path) {
             continue;
         }
     }
+}
+
+const char* model_paths[] = {
+    "colored_cube",
+    "crab",
+    "cube",
+    "drone",
+    "efa",
+    "f117",
+    "f22",
+    "flat_vase",
+    //"minicooper",
+    "quad",
+    "runway",
+    "smooth_vase",
+    "sphere",
+    NULL
+};
+int  current_model_index = 0;
+void load_next_obj_file_data() {
+    if (model_paths[current_model_index] == NULL) {
+        current_model_index = 0;
+    }
+    char file_path[1024];
+    sprintf(file_path, "./assets/models/%s.obj", model_paths[current_model_index]);
+    fprintf(stdout, "Model loading from: %s\n", file_path);
+    load_obj_file_data(file_path);
+    ++current_model_index;
 }

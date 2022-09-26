@@ -11,6 +11,8 @@ typedef struct {
     vec3_t* vertices;
     face_t* faces;
     vec3_t rotation;
+    vec3_t scale;
+    vec3_t translation;
 } mesh_t;
 
 extern mesh_t mesh;
@@ -20,6 +22,7 @@ extern face_t cube_faces[N_CUBE_FACES];
 void load_cube_mesh_data();
 void load_obj_file_data(const char* path);
 
-
-
+extern const char* model_paths[];
+extern int current_model_index;
+void load_next_obj_file_data();
 #endif // PK_MESH_H

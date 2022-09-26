@@ -2,7 +2,6 @@
 #define PK_TRIANGLE_H
 
 #include "vector.h"
-#include <bits/stdint-uintn.h>
 #include <stdint.h>
 
 typedef struct {

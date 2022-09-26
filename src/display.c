@@ -1,6 +1,5 @@
-#include "SDL.h"
+#include <SDL2/SDL.h>
 
-#include <bits/stdint-uintn.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdbool.h>

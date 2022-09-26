@@ -1,9 +1,8 @@
 #ifndef PK_DISPLAY_H
 #define PK_DISPLAY_H
 
-#include "SDL.h"
+#include <SDL2/SDL.h>
 
-#include <bits/stdint-uintn.h>
 #include <stdbool.h>
 #include <stdint.h>
 

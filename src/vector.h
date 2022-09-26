@@ -28,4 +28,8 @@ vec3_t vec3_t_rotate_x(vec3_t v, float angle);
 vec3_t vec3_t_rotate_y(vec3_t v, float angle);
 vec3_t vec3_t_rotate_z(vec3_t v, float angle);
 
+// Vector4D
+typedef struct { float x, y, z, w; } vec4_t;
+vec4_t vec4_from_vec3(vec3_t v);
+vec3_t vec3_from_vec4(vec4_t v);
 #endif //PIKUMA_VECTOR_H
