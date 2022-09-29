@@ -8,7 +8,6 @@
 #include "light.h"
 
 #include <SDL2/SDL.h>
-#include <bits/stdint-uintn.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -282,7 +281,7 @@ void render() {
                 triangle.color
             );
         }
-        
+
         if (is_textured_enabled()) {
             draw_textured_triangle(
                 triangle.points[0].x, triangle.points[0].y, triangle.points[0].z, triangle.points[0].w, triangle.texcoords[0].u, triangle.texcoords[0].v,

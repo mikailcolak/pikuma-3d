@@ -3,7 +3,6 @@
 #include "light.h"
 #include "swap.h"
 #include "vector.h"
-#include <bits/stdint-uintn.h>
 
 /*************************************/
 /* Return the barycentric weights    */
