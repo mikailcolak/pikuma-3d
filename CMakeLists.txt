@@ -7,6 +7,9 @@ set(CMAKE_C_STANDARD 99)
 set(CMAKE_C_STANDARD_REQUIRED TRUE)
 
 project(${PROJECT_NAME})
+IF (WIN32)
+    set(SDL2_DIR C:/SDL2/cmake)
+ENDIF()
 
 find_package(SDL2 REQUIRED)
 
@@ -35,7 +38,11 @@ install(FILES ${LIB_INC_FILES} DESTINATION include)
 
 file(GLOB_RECURSE SOURCE_FILES src/*.c)
 add_executable(${PROJECT_NAME} ${SOURCE_FILES})
-target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}_LIB ${SDL2_LIBRARIES} m)
+IF (WIN32)
+target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}_LIB ${SDL2_LIBRARIES})
+ELSE()
+    target_link_libraries(${PROJECT_NAME} ${PROJECT_NAME}_LIB ${SDL2_LIBRARIES} m)
+ENDIF()
 
 # Copy assets
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/assets DESTINATION ${CMAKE_BINARY_DIR})
