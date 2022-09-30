@@ -1,9 +1,7 @@
 #include "config.h"
 #include <stdint.h>
 
-draw_config_t draw_config = D_WIREFRAME
-                          | D_VERTEX_POINT
-                          | D_SOLID
+draw_config_t draw_config = D_TEXTURED
                           | D_BACK_FACE_CULLED
                           ;
 
