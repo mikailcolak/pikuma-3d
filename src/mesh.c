@@ -1,5 +1,6 @@
 #include "mesh.h"
 #include "array.h"
+#include "texture.h"
 #include "triangle.h"
 #include "vector.h"
 
@@ -23,7 +24,7 @@ vec3_t cube_vertices[N_CUBE_VERTICES] = {
     { .x =  1, .y =  1, .z =  1 }, // 5
     { .x =  1, .y = -1, .z =  1 }, // 6
     { .x = -1, .y =  1, .z =  1 }, // 7
-    { .x = -1, .y = -1, .z =  1 }  // 8
+    { .x = -1, .y = -1, .z =  1 }, // 8
 };
 
 face_t cube_faces[N_CUBE_FACES] = {
@@ -70,44 +71,68 @@ void load_obj_file_data(const char* path) {
     array_free(mesh.faces); mesh.faces = NULL;
 
     const size_t buffer_length = 1024;
-    char buffer[buffer_length];
+    char buffer[1024];
     size_t read_len;
+
+    tex2_t* tex_coords = NULL;
     while (fgets(buffer, buffer_length, fd)) {
 
         // Vertices
         if (strncmp(buffer, "v ", 2) == 0) {
-            vec3_t vertex = {};
+            vec3_t vertex;
             sscanf(buffer, "v %f %f %f", &vertex.x, &vertex.y, &vertex.z);
             array_push(mesh.vertices, vertex);
             continue;
         }
 
+        // Texture coordinates
+        if (strncmp(buffer, "vt ", 3) == 0) {
+            tex2_t tex_coord = { .u = 0, .v = 0 };
+            sscanf(buffer, "vt %f %f", &tex_coord.u, &tex_coord.v);
+            array_push(tex_coords, tex_coord);
+            continue;
+        }
+
         // Faces
         if (strncmp(buffer, "f ", 2) == 0) {
-            face_t face = {
-                .color = 0xFFEEEEEE
-            };
             int _;
-            sscanf(buffer, "f %d/%d/%d %d/%d/%d %d/%d/%d", &face.a, &_, &_, &face.b, &_, &_, &face.c, &_, &_);
+            int face_index_a, face_index_b, face_index_c;
+            int tex_index_a, tex_index_b, tex_index_c;
+            sscanf(buffer, "f %d/%d/%d %d/%d/%d %d/%d/%d", 
+                &face_index_a, &tex_index_a, &_,
+                &face_index_b, &tex_index_b, &_,
+                &face_index_c, &tex_index_c, &_
+            );
+            face_t face = {
+                .color = 0xFFEEEEEE,
+            
+                .a = face_index_a - 1,
+                .b = face_index_b - 1,
+                .c = face_index_c - 1,
+
+                .a_uv = tex_coords[tex_index_a - 1],
+                .b_uv = tex_coords[tex_index_b - 1],
+                .c_uv = tex_coords[tex_index_c - 1],
+            };
             array_push(mesh.faces, face);
             continue;
         }
     }
+    array_free(tex_coords);
 }
 
 const char* model_paths[] = {
-    "colored_cube",
-    "crab",
     "cube",
+    "crab",
     "drone",
     "efa",
     "f117",
     "f22",
     "flat_vase",
-    //"minicooper",
+    // "minicooper",
     "quad",
-    "runway",
-    "smooth_vase",
+    //"runway",
+    //"smooth_vase",
     "sphere",
     NULL
 };
@@ -120,5 +145,8 @@ void load_next_obj_file_data() {
     sprintf(file_path, "./assets/models/%s.obj", model_paths[current_model_index]);
     fprintf(stdout, "Model loading from: %s\n", file_path);
     load_obj_file_data(file_path);
+
+    sprintf(file_path, "./assets/models/%s.png", model_paths[current_model_index]);
+    load_png_texture_data(file_path);
     ++current_model_index;
 }

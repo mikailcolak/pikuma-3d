@@ -1,4 +1,4 @@
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 #include <math.h>
 #include <stdio.h>
@@ -10,9 +10,10 @@ SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
 SDL_Texture* color_buffer_texture = NULL;
 uint32_t* color_buffer = NULL;
+float* z_buffer = NULL;
 
-int win_width = 800;
-int win_height = 600;
+const int win_width = 1280;
+const int win_height = 720;
 int WINDOW_INDEX = 0;
 
 bool initialize_window() {
@@ -132,14 +133,23 @@ void clear_color_buffer(uint32_t color) {
     if (color_buffer == NULL) {
         return;
     }
-    for (size_t i = 0; i < win_width * win_height; ++i) {
-        color_buffer[i] = color;
-
-        int x = i % win_width;
-        int y = i / win_width;
-        if (x % 10 == 0 || y % 10 == 0) {
-            color_buffer[i] = 0xFF333333;
+    for (size_t x = 0; x < win_width; ++x) {
+        for (size_t y = 0; y < win_height; ++y) {
+            size_t i = y * win_width + x;
+            color_buffer[i] = color;
+            if (x % 10 == 0 || y % 10 == 0) {
+                color_buffer[i] = 0xFF333333;
+            }
         }
+    } 
+}
+
+void clear_z_buffer() {
+    if (z_buffer == NULL) {
+        return;
+    }
+    for (size_t i = 0; i < win_width * win_height; ++i) {
+        z_buffer[i] = 1.0;
     } 
 }
 
