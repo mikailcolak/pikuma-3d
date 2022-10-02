@@ -147,6 +147,7 @@ void draw_texel_perspective_correct(
     interpolated_reciprocal_w = 1.0 - interpolated_reciprocal_w;
 
     int zindex = (win_width * y + x) % (win_width * win_height);
+    if (zindex < 0) return;
     if (interpolated_reciprocal_w < z_buffer[zindex]) {
         int color_index = (texture_width * tex_y) + tex_x;
         draw_pixel(x, y, update_color_intensity(texture[color_index], light_intensity));

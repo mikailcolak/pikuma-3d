@@ -105,3 +105,35 @@ mat4_t mat4_mul_mat4(mat4_t a, mat4_t b) {
     return m;
 }
 
+mat4_t mat4_look_at(vec3_t eye, vec3_t target, vec3_t up) {
+    vec3_t z = vec3_sub(target, up);
+    vec3_normalize(&z);
+    vec3_t x = vec3_cross(up, z);
+    vec3_normalize(&x);
+    vec3_t y = vec3_cross(z, x);
+
+    return (mat4_t) {{
+        { x.x, x.y, x.z, -vec3_dot(x, eye) },
+        { y.x, y.y, y.z, -vec3_dot(y, eye) },
+        { z.x, z.y, z.z, -vec3_dot(z, eye) },
+        {   0,   0,   0,                 1 },
+    }};
+}
+
+mat4_t mat4_get_yxz_view(vec3_t eye, vec3_t rotation) {
+    const float c3 = cos(rotation.z);
+    const float s3 = sin(rotation.z);
+    const float c2 = cos(rotation.x);
+    const float s2 = sin(rotation.x);
+    const float c1 = cos(rotation.y);
+    const float s1 = sin(rotation.y);
+    const vec3_t x = { (c1 * c3 + s1 * s2 * s3), (c2 * s3), (c1 * s2 * s3 - c3 * s1) };
+    const vec3_t y = { (c3 * s1 * s2 - c1 * s3), (c2 * c3), (c1 * c3 * s2 + s1 * s3) };
+    const vec3_t z = { (c2 * s1), (-s2), (c1 * c2) };
+    return (mat4_t) {{
+        { x.x, x.y, x.z, -vec3_dot(x, eye) },
+        { y.x, y.y, y.z, -vec3_dot(y, eye) },
+        { z.x, z.y, z.z, -vec3_dot(z, eye) },
+        {   0,   0,   0,                 1 },
+    }};
+}

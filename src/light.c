@@ -1,6 +1,9 @@
 #include "light.h"
 
-light_t sun_light = { 0, 0, 1 };
+light_t sun_light = {
+    .direction = { 0, 0, 1 },
+    .position = { 0, 0, 0 }
+};
 
 uint32_t update_color_intensity(uint32_t original_color, float intensity) {
     if (intensity < 0) intensity = 0;

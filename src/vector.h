@@ -23,6 +23,7 @@ vec3_t vec3_cross(vec3_t v0, vec3_t v1);
 float vec3_dot(vec3_t v0, vec3_t v1);
 void vec3_normalize(vec3_t* v);
 vec3_t vec3_normalized(vec3_t v);
+vec3_t vec3_clone(vec3_t* v);
 
 vec3_t vec3_t_rotate_x(vec3_t v, float angle);
 vec3_t vec3_t_rotate_y(vec3_t v, float angle);

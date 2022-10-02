@@ -17,5 +17,7 @@ extern int texture_height;
 
 void load_png_texture_data(const char* filename);
 
+tex2_t tex2_clone(tex2_t* t);
+
 extern const uint8_t REDBRICK_TEXTURE[];
 #endif // PK_TEXTURE_H

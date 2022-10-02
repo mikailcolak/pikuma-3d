@@ -109,6 +109,10 @@ float vec3_dot(vec3_t v0, vec3_t v1) {
 
 void vec3_normalize(vec3_t* v) {
     float len = vec3_length(*v);
+    if (len == 0) {
+        v->x = v->y = v->z = 0;
+        return;
+    }
     v->x /= len;
     v->y /= len;
     v->z /= len;
@@ -117,6 +121,14 @@ void vec3_normalize(vec3_t* v) {
 vec3_t vec3_normalized(vec3_t v) {
     vec3_normalize(&v);
     return v;
+}
+
+vec3_t vec3_clone(vec3_t* v) {
+    return (vec3_t) {
+        v->x,
+        v->y,
+        v->z,
+    };
 }
 
 vec3_t vec3_t_rotate_x(vec3_t v, float angle){

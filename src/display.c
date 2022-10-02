@@ -12,8 +12,8 @@ SDL_Texture* color_buffer_texture = NULL;
 uint32_t* color_buffer = NULL;
 float* z_buffer = NULL;
 
-const int win_width = 1280;
-const int win_height = 720;
+const int win_width = 1920 / 4;
+const int win_height = 1080 / 4;
 int WINDOW_INDEX = 0;
 
 bool initialize_window() {
@@ -40,7 +40,7 @@ bool initialize_window() {
         SDL_WINDOWPOS_CENTERED_DISPLAY(WINDOW_INDEX),
         win_width,
         win_height,
-        SDL_WINDOW_SHOWN
+        SDL_WINDOW_FULLSCREEN_DESKTOP
     );
     if (!window) {
         fprintf(stderr, "<!> Could not create window.\n");
@@ -127,6 +127,7 @@ void render_color_buffer() {
         (int)(win_width * sizeof(uint32_t))
     );
     SDL_RenderCopy(renderer, color_buffer_texture, NULL, NULL);
+    SDL_RenderPresent(renderer);
 }
 
 void clear_color_buffer(uint32_t color) {

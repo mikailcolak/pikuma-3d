@@ -7,6 +7,7 @@
 
 typedef struct {
     vec3_t direction;
+    vec3_t position;
 } light_t;
 
 extern light_t sun_light;
